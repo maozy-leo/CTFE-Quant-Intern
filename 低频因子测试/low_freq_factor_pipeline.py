@@ -28,6 +28,8 @@ from low_freq_factor_common import (
 from low_freq_factor_neu import NeuConfig, submit_neu
 from low_freq_factor_test import TestConfig, submit_test
 
+TEST_FACTOR_SOURCE_CHOICES = ["raw", "neutralized"]
+
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run low-frequency NEU/TEST commands.")
@@ -43,6 +45,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--env-file", default=".env", help="Path to .env.")
     parser.add_argument("--factor-raw-db-path", default=DEFAULT_FACTOR_RAW_DB_PATH)
     parser.add_argument("--factor-db-path", default=DEFAULT_FACTOR_DB_PATH)
+    parser.add_argument(
+        "--test-factor-source",
+        choices=TEST_FACTOR_SOURCE_CHOICES,
+        help="Factor source for TEST. In test mode defaults to raw; in neu+test defaults to neutralized.",
+    )
     parser.add_argument("--test-factor-db-path", help="Override factor_dbPath used by TEST.")
     parser.add_argument("--results-db-path", default=DEFAULT_RESULTS_DB_PATH)
     parser.add_argument("--pools", nargs="+", default=DEFAULT_POOLS, help="Stock pools for TEST.")
@@ -80,7 +87,9 @@ def main() -> None:
     if args.mode in {"test", "neu+test"}:
         if args.test_factor_db_path:
             test_factor_db_path = args.test_factor_db_path
-        elif args.mode == "neu+test":
+        elif args.test_factor_source == "raw":
+            test_factor_db_path = args.factor_raw_db_path
+        elif args.test_factor_source == "neutralized" or args.mode == "neu+test":
             test_factor_db_path = args.factor_db_path
         else:
             test_factor_db_path = args.factor_raw_db_path

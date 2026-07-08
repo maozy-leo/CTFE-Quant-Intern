@@ -11,6 +11,7 @@ from typing import Any
 
 from low_freq_factor_common import (
     DEFAULT_BUY_P,
+    DEFAULT_FACTOR_DB_PATH,
     DEFAULT_FACTOR_RAW_DB_PATH,
     DEFAULT_POOLS,
     DEFAULT_RESULTS_DB_PATH,
@@ -22,6 +23,11 @@ from low_freq_factor_common import (
     to_yyyymmdd,
     validate_factor_name,
 )
+
+FACTOR_SOURCE_DB_PATHS = {
+    "raw": DEFAULT_FACTOR_RAW_DB_PATH,
+    "neutralized": DEFAULT_FACTOR_DB_PATH,
+}
 
 
 @dataclass(frozen=True)
@@ -78,7 +84,13 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--begin-date", help="Optional test begin date, e.g. 20150105.")
     parser.add_argument("--end-date", help="Optional test end date, e.g. 20250722.")
     parser.add_argument("--env-file", default=".env", help="Path to .env.")
-    parser.add_argument("--factor-db-path", default=DEFAULT_FACTOR_RAW_DB_PATH, help="Source factor database path.")
+    parser.add_argument(
+        "--factor-source",
+        choices=tuple(FACTOR_SOURCE_DB_PATHS),
+        default="raw",
+        help="Factor source for TEST: raw uses dfs://factor_raw_intern, neutralized uses dfs://factor_intern.",
+    )
+    parser.add_argument("--factor-db-path", help="Source factor database path. Overrides --factor-source.")
     parser.add_argument("--results-db-path", default=DEFAULT_RESULTS_DB_PATH, help="Result database path.")
     parser.add_argument("--pools", nargs="+", default=DEFAULT_POOLS, help="Stock pools for TEST.")
     parser.add_argument("--num-g", type=int, default=10, help="Number of groups for TEST.")
@@ -92,9 +104,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_arg_parser().parse_args()
     env = parse_env(Path(args.env_file))
+    factor_db_path = args.factor_db_path or FACTOR_SOURCE_DB_PATHS[args.factor_source]
     config = TestConfig(
         factor=validate_factor_name(args.factor),
-        factor_db_path=args.factor_db_path,
+        factor_db_path=factor_db_path,
         results_db_path=args.results_db_path,
         pools=args.pools,
         num_g=args.num_g,

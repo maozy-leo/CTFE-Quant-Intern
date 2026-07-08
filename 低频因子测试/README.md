@@ -46,6 +46,27 @@ python 低频因子测试/low_freq_factor_pipeline.py \
   --end-date 20250722
 ```
 
+如果已经跑过中性化，希望只做 `TEST` 并读取中性化后的因子库 `dfs://factor_intern`：
+
+```bash
+python 低频因子测试/low_freq_factor_test.py \
+  --factor cj20260705_ret_overall_20d \
+  --factor-source neutralized \
+  --begin-date 20150105 \
+  --end-date 20250722
+```
+
+总控只做 `TEST` 时也可以指定测试中性化因子：
+
+```bash
+python 低频因子测试/low_freq_factor_pipeline.py \
+  --mode test \
+  --factor cj20260705_ret_overall_20d \
+  --test-factor-source neutralized \
+  --begin-date 20150105 \
+  --end-date 20250722
+```
+
 默认 TEST 参数：
 
 - `factor_dbPath`: `dfs://factor_raw_intern`
@@ -143,8 +164,10 @@ python 低频因子测试/low_freq_factor_pipeline.py \
 | `--env-file` | `.env` | 环境变量文件路径 |
 | `--factor-raw-db-path` | `dfs://factor_raw_intern` | NEU 的原始因子库；总控 `test` 模式默认也用它作为测试因子库 |
 | `--factor-db-path` | `dfs://factor_intern` | NEU 的输出因子库；总控 `neu+test` 模式默认用它作为测试因子库 |
+| `--factor-source` | `raw` | 仅 `low_freq_factor_test.py` 中可用；`raw` 测试原始因子，`neutralized` 测试中性化因子 |
+| `--test-factor-source` | 见说明 | 仅总控脚本可用；`raw` 测试原始因子，`neutralized` 测试中性化因子；`test` 模式默认 `raw`，`neu+test` 模式默认 `neutralized` |
 | `--test-factor-db-path` | 见说明 | 仅总控脚本可用，用于覆盖 TEST 使用的因子库 |
-| `--factor-db-path` | `dfs://factor_raw_intern` | 仅 `low_freq_factor_test.py` 中可用，表示 TEST 使用的因子库 |
+| `--factor-db-path` | 见说明 | `low_freq_factor_test.py` 中表示 TEST 使用的因子库，并覆盖 `--factor-source`；总控脚本中表示 NEU 输出因子库 |
 | `--results-db-path` | `dfs://factor_results_intern` | 测试结果库 |
 | `--pools` | `market 1000 500 300` | 股票池，可传多个 |
 | `--num-g` | `10` | 分组数量 |
@@ -165,5 +188,6 @@ python 低频因子测试/low_freq_factor_pipeline.py \
 ## 注意事项
 
 - 直接测试原始因子：使用 `low_freq_factor_test.py` 或总控 `--mode test`。
-- 测试中性化因子：先跑 `low_freq_factor_neu.py`，再用 `low_freq_factor_test.py --factor-db-path dfs://factor_intern`；或直接使用总控 `--mode neu+test`。
+- 测试已经中性化的因子：先跑 `low_freq_factor_neu.py`，再用 `low_freq_factor_test.py --factor-source neutralized`；总控只做测试可用 `--mode test --test-factor-source neutralized`。
+- 边中性化边测试：直接使用总控 `--mode neu+test`。
 - 低频服务地址不通过命令行传入，统一从 `.env` 的 `LOW_FREQ_SERVICE_IP/LOW_FREQ_SERVICE_PORT` 读取。
