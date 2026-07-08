@@ -1,6 +1,53 @@
 # CTFE Quant Intern Utilities
 
-本仓库目前包含因子 IC 统计与绘图工具。
+本仓库中包含了若干可直接使用的工具。
+
+## 删除 DolphinDB 表
+
+脚本位置：
+
+```bash
+utils/drop_dolphindb_table.py
+```
+
+默认从 `.env` 读取 DolphinDB 连接参数：
+
+```env
+ip=
+port=
+usr=
+pwd=
+```
+
+默认目标库为 `dfs://factor_intern`。建议先 dry-run 检查：
+
+```bash
+python utils/drop_dolphindb_table.py factor_table_name --dry-run
+```
+
+确认后再执行删除：
+
+```bash
+python utils/drop_dolphindb_table.py factor_table_name --yes
+```
+
+指定其他库：
+
+```bash
+python utils/drop_dolphindb_table.py factor_table_name \
+  --db-path dfs://factor_intern \
+  --yes
+```
+
+参数说明：
+
+- `table_name`：要删除的 DolphinDB 表名。
+- `--db-path`：表所在数据库路径，默认为 `dfs://factor_raw_intern`。
+- `--env-file`：连接配置文件，默认为 `.env`。
+- `--host`、`--port`、`--user`、`--password`：命令行连接参数，会覆盖 `.env`。
+- `--dry-run`：只检查库和表是否存在，不删除。
+- `--ignore-missing`：库或表不存在时不报错。
+- `--yes`：确认执行删除；未设置 `--dry-run` 时必须显式传入。
 
 ## Cumulative IC 绘图
 
